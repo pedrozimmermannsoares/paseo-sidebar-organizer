@@ -7,7 +7,7 @@ const color = z.enum(LABEL_COLORS);
 const label = z.object({ name: z.string().min(1), color });
 const statusLabel = label.extend({ show: z.boolean().default(true) });
 
-export const STATUS_KEYS = ["running", "idle", "blocked"] as const;
+export const STATUS_KEYS = ["running", "waiting", "idle", "blocked"] as const;
 export type StatusKey = (typeof STATUS_KEYS)[number];
 
 export const organizerSettings = defineSettings({
@@ -24,10 +24,18 @@ export const organizerSettings = defineSettings({
     reply: label.default({ name: "Reply", color: "red" }),
     // `show: false` tracks a status without a chip, e.g. when Paseo already shows it.
     status: z
-      .object({ enabled: z.boolean(), running: statusLabel, idle: statusLabel, blocked: statusLabel })
+      .object({
+        enabled: z.boolean(),
+        running: statusLabel,
+        // The agent stopped but one of its child agents is still working.
+        waiting: statusLabel.default({ name: "Waiting", color: "sky", show: true }),
+        idle: statusLabel,
+        blocked: statusLabel,
+      })
       .default({
         enabled: true,
         running: { name: "Running", color: "blue", show: true },
+        waiting: { name: "Waiting", color: "sky", show: true },
         idle: { name: "Idle", color: "emerald", show: true },
         blocked: { name: "Blocked", color: "orange", show: true },
       }),

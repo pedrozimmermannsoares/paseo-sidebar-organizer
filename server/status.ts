@@ -1,6 +1,6 @@
 import type { PaseoApi } from "@getpaseo/client";
 import { isAttentionWorkspace, type OrganizerSettings } from "../shared/settings";
-import { statusOf, workspaceOwners } from "./agents";
+import { activeAgents, statusOf, workspaceOwners } from "./agents";
 import type { WorkspaceLabels } from "./labels";
 
 // Schedule and heartbeat prompts do not update lastUserMessageAt, so a recent value means a
@@ -16,14 +16,15 @@ export async function humanStartedTurn(paseo: PaseoApi, agentId: string) {
 
 // Brings every active workspace to its owner's current state and releases stale conversations.
 export async function sweep(paseo: PaseoApi, labels: WorkspaceLabels, settings: OrganizerSettings) {
-  const owners = await workspaceOwners(paseo);
+  const agents = await activeAgents(paseo);
+  const owners = workspaceOwners(agents);
   const { entries } = await paseo.workspaces.list();
   const notes: string[] = [];
 
   for (const workspace of entries) {
     const owner = owners.get(workspace.id);
     if (!owner) continue;
-    const status = statusOf(owner);
+    const status = statusOf(owner, agents);
     const question = owner.pendingPermissions.some((request) => request.kind === "question");
     const stale = isStale(settings, status, owner.updatedAt, workspace, Date.now());
 

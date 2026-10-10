@@ -13,7 +13,7 @@ import { LABEL_COLORS, type LabelColor, type OrganizerSettings, STATUS_KEYS, typ
 
 const colorOptions = LABEL_COLORS.map((color) => ({ label: color, value: color }));
 const releaseOptions = [0, 1, 2, 3, 5, 7, 14].map((days) => ({ label: days ? `${days} days` : "Never", value: String(days) }));
-const statusTitles: Record<StatusKey, string> = { running: "Running", idle: "Idle", blocked: "Blocked" };
+const statusTitles: Record<StatusKey, string> = { running: "Running", waiting: "Waiting for child agents", idle: "Idle", blocked: "Blocked" };
 
 export function OrganizerSettingsScreen(_props: PluginSurfaceProps) {
   const settings = useSettings(organizerSettings);
