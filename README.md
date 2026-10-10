@@ -47,7 +47,7 @@ A turn counts as started by you when the agent's `lastUserMessageAt` changed in 
 - The plugin SDK in Paseo 0.11 has no calls to label or pin workspaces. The plugin opens its own WebSocket connection to the local daemon, as the Paseo CLI does, using `@getpaseo/client` and the daemon's local credential from `$PASEO_HOME/local-credential`. It reads the daemon address from `$PASEO_HOME/config.json` and supports only a local TCP address. It sends nothing outside the daemon.
 - It depends on `@getpaseo/client/internal/daemon-client`, an internal module. A future Paseo release can change it.
 - Labels and pins are shared by everyone connected to the same daemon.
-- Paseo cannot create a workspace already pinned. A new workspace appears unpinned for a moment and moves to the pinned group when the plugin pins it.
+- Paseo cannot create a workspace already pinned. When the creation request carries the first agent, as it does from the app, the plugin pins the workspace as it is created, using the agent's `paseo.parent-agent-id` label to tell a person from an agent. `paseo run --new-workspace` creates the workspace first, so that workspace is pinned a moment later, when its agent starts.
 - The status reflects the first agent of the workspace. Other agents in the same workspace do not change it.
 - The plugin remembers in memory which turns you started. A turn that is running while the plugin restarts or updates does not get the automatic reply label when it ends.
 
