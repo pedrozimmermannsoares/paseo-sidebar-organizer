@@ -48,6 +48,7 @@ A turn counts as started by you when the agent's `lastUserMessageAt` changed in 
 - It depends on `@getpaseo/client/internal/daemon-client`, an internal module. A future Paseo release can change it.
 - Labels and pins are shared by everyone connected to the same daemon.
 - The status reflects the first agent of the workspace. Other agents in the same workspace do not change it.
+- The plugin remembers in memory which turns you started. A turn that is running while the plugin restarts or updates does not get the automatic reply label when it ends.
 
 ## Development
 
