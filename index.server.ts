@@ -45,6 +45,22 @@ export default function contribute(server: PluginServerContext) {
     }, failure);
   }
 
+  // Paseo cannot create a pinned workspace. Deciding at creation, from the first agent's
+  // parent label, lets the pin land with the workspace instead of after its agent starts.
+  const creations: { human: boolean; at: number }[] = [];
+  server.before("workspace.create", ({ request }) => {
+    const human = Boolean(request.agent) && !request.agent?.labels?.["paseo.parent-agent-id"];
+    creations.push({ human, at: Date.now() });
+  });
+  server.on("workspace.created", ({ workspace }) =>
+    run(async (values, { daemon }) => {
+      while (creations.length && Date.now() - creations[0].at > 30_000) creations.shift();
+      if (!creations.shift()?.human || !values.attention.pin) return null;
+      await daemon.setWorkspacePinned(workspace.id, true);
+      return `${workspace.id}: pinned at creation`;
+    }, `Failed to pin workspace ${workspace.id}`),
+  );
+
   server.on("agent.created", ({ agent }) =>
     run((values, { paseo, daemon, labels }) => organizeWorkspace(agent, values, paseo, daemon, labels), `Failed to organize workspace ${agent.workspaceId}`),
   );
