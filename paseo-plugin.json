@@ -1,0 +1,15 @@
+{
+  "id": "paseo-sidebar-organizer",
+  "name": "Sidebar organizer",
+  "description": "Labels and pins workspaces with role, status and reply labels so the sidebar shows what needs you.",
+  "requirements": {
+    "paseo": ">=0.11.2"
+  },
+  "build": [
+    [
+      "npm",
+      "ci",
+      "--omit=dev"
+    ]
+  ]
+}
