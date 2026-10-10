@@ -88,6 +88,14 @@ export function OrganizerSettingsScreen(_props: PluginSurfaceProps) {
                 edit({ ...current.values, status: { ...current.values.status, [key]: { ...current.values.status[key], name } } })
               }
             />
+            <SettingsSwitch
+              label="Show as a label"
+              hint="Turn off when Paseo already shows this status."
+              value={current.values.status[key].show}
+              onValueChange={(show) =>
+                edit({ ...current.values, status: { ...current.values.status, [key]: { ...current.values.status[key], show } } })
+              }
+            />
             <SettingsSelect
               label="Color"
               value={current.values.status[key].color}
@@ -107,9 +115,15 @@ export function OrganizerSettingsScreen(_props: PluginSurfaceProps) {
         <SettingsCard>
           <SettingsInput
             label="Label name"
-            hint="An agent adds it when it needs your answer. It goes away when you send a message."
+            hint="Added when an agent asks you a question. It goes away when you send a message or answer."
             initialValue={current.values.reply.name}
             onChangeText={(name) => edit({ ...current.values, reply: { ...current.values.reply, name } })}
+          />
+          <SettingsSwitch
+            label="Also after every answer to you"
+            hint="In workspaces with the attention label, when a turn you started ends."
+            value={current.values.replyAfterYourTurn}
+            onValueChange={(replyAfterYourTurn) => edit({ ...current.values, replyAfterYourTurn })}
           />
           <SettingsSelect
             label="Color"

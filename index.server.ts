@@ -49,17 +49,28 @@ export default function contribute(server: PluginServerContext) {
     run((values, { paseo, labels }) => organizeWorkspace(agent, values, paseo, labels), `Failed to organize workspace ${agent.workspaceId}`),
   );
 
+  // Agents whose current turn started with a person's message.
+  const yourTurns = new Set<string>();
+
   server.on("agent.turn_started", ({ agent }) =>
     onOwnerEvent(agent, `Failed to mark workspace ${agent.workspaceId} as running`, async (values, { paseo, labels }, workspaceId) => {
       const human = await humanStartedTurn(paseo, agent.id);
+      if (human) yourTurns.add(agent.id);
+      else yourTurns.delete(agent.id);
       return labels.apply(workspaceId, values, { status: "running", ...(human ? { reply: false } : {}) });
     }),
   );
 
   server.on("agent.turn_ended", ({ agent, outcome }) =>
-    onOwnerEvent(agent, `Failed to update workspace ${agent.workspaceId} after a turn`, (values, { labels }, workspaceId) =>
-      labels.apply(workspaceId, values, { status: outcome.kind === "failed" ? "blocked" : "idle" }),
-    ),
+    onOwnerEvent(agent, `Failed to update workspace ${agent.workspaceId} after a turn`, async (values, { paseo, labels }, workspaceId) => {
+      const answeredYou = yourTurns.delete(agent.id) && outcome.kind === "completed";
+      const workspace = answeredYou && values.replyAfterYourTurn ? await paseo.workspaces.ref(workspaceId).refresh() : null;
+      const reply = Boolean(workspace?.labels?.includes(values.attention.name));
+      return labels.apply(workspaceId, values, {
+        status: outcome.kind === "failed" ? "blocked" : "idle",
+        ...(reply ? { reply: true } : {}),
+      });
+    }),
   );
 
   server.on("agent.permission_requested", ({ agent, request }) =>

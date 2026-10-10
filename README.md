@@ -12,8 +12,8 @@ Each workspace row gets up to four kinds of labels, always in this order:
 | --- | --- | --- |
 | Role | none | The first rule whose text appears in the title of the workspace's first agent. You define the rules, for example `🔨` → `Executor`. |
 | Attention | `You` (pink), and the workspace is pinned | The workspace was opened by a person, not by another agent. Removed, and the workspace unpinned, after 3 days without activity unless the agent waits for your reply. |
-| Status | `🔵 Running`, `🟢 Idle`, `🟠 Blocked` | Follows the agent that opened the workspace. Blocked means a pending permission, a pending question, or a failed turn. |
-| Reply | `🔴 Reply` (red) | The agent asked you a question through the provider's question tool, or an agent or script added the label. Removed when you send a message or answer. Schedule and heartbeat runs leave it in place. |
+| Status | `Running` (blue), `Idle` (green), `Blocked` (orange) | Follows the agent that opened the workspace. Blocked means a pending permission, a pending question, or a failed turn. Each status can be tracked without a label. |
+| Reply | `Reply` (red) | A turn that started with your message ended in a workspace with the attention label, the agent asked you a question through the provider's question tool, or an agent or script added the label. Removed when you send a message or answer. Schedule and heartbeat runs neither add nor remove it. |
 
 Labels you add by hand stay in front of these and are never removed.
 
@@ -27,7 +27,7 @@ paseo plugin add git:pedrozimmermannsoares/paseo-sidebar-organizer
 
 ## Configure
 
-Open Settings → Plugins → Sidebar organizer. You can change every label name and color, turn pinning and status off, set the inactivity period (0 turns it off), and edit the role rules. Label colors are limited to the ten colors the Paseo sidebar supports.
+Open Settings → Plugins → Sidebar organizer. You can change every label name and color, turn pinning, status labels and the automatic reply label off, set the inactivity period (0 turns it off), and edit the role rules. Label colors are limited to the ten colors the Paseo sidebar supports.
 
 An agent or script can mark a workspace as waiting for your reply by assigning the reply label with the same name and color as in the settings. The plugin removes it when you answer.
 
