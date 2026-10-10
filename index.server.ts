@@ -46,7 +46,7 @@ export default function contribute(server: PluginServerContext) {
   }
 
   server.on("agent.created", ({ agent }) =>
-    run((values, { paseo, labels }) => organizeWorkspace(agent, values, paseo, labels), `Failed to organize workspace ${agent.workspaceId}`),
+    run((values, { paseo, daemon, labels }) => organizeWorkspace(agent, values, paseo, daemon, labels), `Failed to organize workspace ${agent.workspaceId}`),
   );
 
   // Agents whose current turn started with a person's message.
@@ -57,7 +57,10 @@ export default function contribute(server: PluginServerContext) {
       const human = await humanStartedTurn(paseo, agent.id);
       if (human) yourTurns.add(agent.id);
       else yourTurns.delete(agent.id);
-      return labels.apply(workspaceId, values, { status: "running", ...(human ? { reply: false } : {}) });
+      // Talking to an agent a person opened brings its workspace back to the pinned group. Agents
+      // with a parent are skipped: their parent's `paseo send` looks like a person's message.
+      const pin = human && agent.parentAgentId === null && values.attention.pin ? { pin: true } : {};
+      return labels.apply(workspaceId, values, { status: "running", ...(human ? { reply: false } : {}), ...pin });
     }),
   );
 

@@ -35,8 +35,8 @@ An agent or script can mark a workspace as waiting for your reply by assigning t
 
 The daemon runs the plugin's server entry. It listens to these lifecycle events:
 
-- `agent.created`: role, attention label and pin for a new workspace. A child agent that runs inside its parent's workspace changes nothing, and a workspace that already has labels is left alone.
-- `agent.turn_started`, `agent.turn_ended`, `agent.permission_requested`, `agent.permission_resolved`: status and reply labels for the oldest active agent of each workspace.
+- `agent.created`: an agent with no parent pins its workspace right away, even an existing one. A new workspace also gets its role and attention labels. A child agent that runs inside its parent's workspace changes nothing, and a workspace that already has labels keeps them.
+- `agent.turn_started`, `agent.turn_ended`, `agent.permission_requested`, `agent.permission_resolved`: status and reply labels for the oldest active agent of each workspace. Your message to an agent with no parent pins its workspace again.
 
 When it starts, and every 30 minutes, it brings every active workspace up to date and releases inactive conversations.
 
@@ -47,6 +47,7 @@ A turn counts as started by you when the agent's `lastUserMessageAt` changed in 
 - The plugin SDK in Paseo 0.11 has no calls to label or pin workspaces. The plugin opens its own WebSocket connection to the local daemon, as the Paseo CLI does, using `@getpaseo/client` and the daemon's local credential from `$PASEO_HOME/local-credential`. It reads the daemon address from `$PASEO_HOME/config.json` and supports only a local TCP address. It sends nothing outside the daemon.
 - It depends on `@getpaseo/client/internal/daemon-client`, an internal module. A future Paseo release can change it.
 - Labels and pins are shared by everyone connected to the same daemon.
+- Paseo cannot create a workspace already pinned. A new workspace appears unpinned for a moment and moves to the pinned group when the plugin pins it.
 - The status reflects the first agent of the workspace. Other agents in the same workspace do not change it.
 - The plugin remembers in memory which turns you started. A turn that is running while the plugin restarts or updates does not get the automatic reply label when it ends.
 
