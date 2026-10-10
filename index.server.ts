@@ -5,7 +5,7 @@ import { connectDaemon } from "./server/daemon";
 import { WorkspaceLabels } from "./server/labels";
 import { organizeWorkspace } from "./server/organizer";
 import { humanStartedTurn, sweep } from "./server/status";
-import { type OrganizerSettings, organizerSettings } from "./shared/settings";
+import { isAttentionWorkspace, type OrganizerSettings, organizerSettings } from "./shared/settings";
 
 const SWEEP_INTERVAL_MS = 30 * 60_000;
 
@@ -65,7 +65,7 @@ export default function contribute(server: PluginServerContext) {
     onOwnerEvent(agent, `Failed to update workspace ${agent.workspaceId} after a turn`, async (values, { paseo, labels }, workspaceId) => {
       const answeredYou = yourTurns.delete(agent.id) && outcome.kind === "completed";
       const workspace = answeredYou && values.replyAfterYourTurn ? await paseo.workspaces.ref(workspaceId).refresh() : null;
-      const reply = Boolean(workspace?.labels?.includes(values.attention.name));
+      const reply = Boolean(workspace && isAttentionWorkspace(values, workspace));
       return labels.apply(workspaceId, values, {
         status: outcome.kind === "failed" ? "blocked" : "idle",
         ...(reply ? { reply: true } : {}),

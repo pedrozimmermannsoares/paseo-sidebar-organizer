@@ -15,8 +15,11 @@ export const organizerSettings = defineSettings({
   scope: "host",
   version: 1,
   schema: z.object({
-    // Workspaces opened by a person, not by another agent.
-    attention: label.extend({ pin: z.boolean() }).default({ name: "You", color: "pink", pin: true }),
+    // Workspaces opened by a person, not by another agent. With `show: false` the pin alone marks
+    // them, and every pinned workspace counts as one.
+    attention: label
+      .extend({ pin: z.boolean(), show: z.boolean().default(true) })
+      .default({ name: "You", color: "pink", pin: true, show: true }),
     // Set by an agent that waits for a person's reply; removed when that person sends a message.
     reply: label.default({ name: "Reply", color: "red" }),
     // `show: false` tracks a status without a chip, e.g. when Paseo already shows it.
@@ -40,3 +43,14 @@ export const organizerSettings = defineSettings({
 export type OrganizerSettings = z.infer<typeof organizerSettings.schema>;
 export type LabelColor = (typeof LABEL_COLORS)[number];
 export type Label = z.infer<typeof label>;
+
+// A workspace a person takes part in: it carries the attention label, or, when that label is
+// hidden, it is pinned.
+export function isAttentionWorkspace(
+  settings: Pick<OrganizerSettings, "attention">,
+  workspace: { labels?: readonly string[]; pinnedAt?: string | null },
+) {
+  return settings.attention.show
+    ? Boolean(workspace.labels?.includes(settings.attention.name))
+    : Boolean(workspace.pinnedAt);
+}

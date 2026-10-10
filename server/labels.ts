@@ -45,7 +45,7 @@ export class WorkspaceLabels {
 
     const desired = [
       ...base,
-      ...(attention ? [settings.attention.name] : []),
+      ...(attention && settings.attention.show ? [settings.attention.name] : []),
       ...(status && settings.status[status].show ? [settings.status[status].name] : []),
       ...(reply ? [settings.reply.name] : []),
     ];

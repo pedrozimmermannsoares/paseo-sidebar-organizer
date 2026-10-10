@@ -1,5 +1,5 @@
 import type { PaseoApi } from "@getpaseo/client";
-import type { OrganizerSettings } from "../shared/settings";
+import { isAttentionWorkspace, type OrganizerSettings } from "../shared/settings";
 import { statusOf, workspaceOwners } from "./agents";
 import type { WorkspaceLabels } from "./labels";
 
@@ -25,7 +25,7 @@ export async function sweep(paseo: PaseoApi, labels: WorkspaceLabels, settings: 
     if (!owner) continue;
     const status = statusOf(owner);
     const question = owner.pendingPermissions.some((request) => request.kind === "question");
-    const stale = isStale(settings, status, owner.updatedAt, workspace.labels ?? [], Date.now());
+    const stale = isStale(settings, status, owner.updatedAt, workspace, Date.now());
 
     const note = await labels.apply(workspace.id, settings, {
       status,
@@ -43,14 +43,14 @@ export function isStale(
   settings: Pick<OrganizerSettings, "releaseAfterDays" | "attention" | "reply">,
   status: string,
   updatedAt: string,
-  labels: readonly string[],
+  workspace: { labels?: readonly string[]; pinnedAt?: string | null },
   now: number,
 ) {
   return (
     settings.releaseAfterDays > 0 &&
     status !== "running" &&
     Date.parse(updatedAt) < now - settings.releaseAfterDays * 86_400_000 &&
-    labels.includes(settings.attention.name) &&
-    !labels.includes(settings.reply.name)
+    isAttentionWorkspace(settings, workspace) &&
+    !workspace.labels?.includes(settings.reply.name)
   );
 }

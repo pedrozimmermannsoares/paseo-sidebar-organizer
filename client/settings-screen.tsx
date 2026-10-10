@@ -56,6 +56,12 @@ export function OrganizerSettingsScreen(_props: PluginSurfaceProps) {
             }
           />
           <SettingsSwitch
+            label="Show as a label"
+            hint="Off: the pin alone marks these workspaces, and every pinned workspace counts."
+            value={attention.show}
+            onValueChange={(show) => edit({ ...current.values, attention: { ...attention, show } })}
+          />
+          <SettingsSwitch
             label="Pin to the top of the sidebar"
             value={attention.pin}
             onValueChange={(pin) => edit({ ...current.values, attention: { ...attention, pin } })}
@@ -121,7 +127,7 @@ export function OrganizerSettingsScreen(_props: PluginSurfaceProps) {
           />
           <SettingsSwitch
             label="Also after every answer to you"
-            hint="In workspaces with the attention label, when a turn you started ends."
+            hint="In workspaces that involve you, when a turn you started ends."
             value={current.values.replyAfterYourTurn}
             onValueChange={(replyAfterYourTurn) => edit({ ...current.values, replyAfterYourTurn })}
           />
