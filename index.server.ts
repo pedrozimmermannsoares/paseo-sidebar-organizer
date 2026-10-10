@@ -73,10 +73,7 @@ export default function contribute(server: PluginServerContext) {
       const human = await humanStartedTurn(paseo, agent.id);
       if (human) yourTurns.add(agent.id);
       else yourTurns.delete(agent.id);
-      // Talking to an agent a person opened brings its workspace back to the pinned group. Agents
-      // with a parent are skipped: their parent's `paseo send` looks like a person's message.
-      const pin = human && agent.parentAgentId === null && values.attention.pin ? { pin: true } : {};
-      return labels.apply(workspaceId, values, { status: "running", ...(human ? { reply: false } : {}), ...pin });
+      return labels.apply(workspaceId, values, { status: "running", ...(human ? { reply: false } : {}) });
     }),
   );
 

@@ -36,7 +36,7 @@ An agent or script can mark a workspace as waiting for your reply by assigning t
 The daemon runs the plugin's server entry. It listens to these lifecycle events:
 
 - `agent.created`: an agent with no parent pins its workspace right away, even an existing one. A new workspace also gets its role and attention labels. A child agent that runs inside its parent's workspace changes nothing, and a workspace that already has labels keeps them.
-- `agent.turn_started`, `agent.turn_ended`, `agent.permission_requested`, `agent.permission_resolved`: status and reply labels for the oldest active agent of each workspace. Your message to an agent with no parent pins its workspace again.
+- `agent.turn_started`, `agent.turn_ended`, `agent.permission_requested`, `agent.permission_resolved`: status and reply labels for the oldest active agent of each workspace.
 
 When it starts, and every 30 minutes, it brings every active workspace up to date and releases inactive conversations.
 
@@ -49,6 +49,7 @@ A turn counts as started by you when the agent's `lastUserMessageAt` changed in 
 - Labels and pins are shared by everyone connected to the same daemon.
 - Paseo cannot create a workspace already pinned. When the creation request carries the first agent, as it does from the app, the plugin pins the workspace as it is created, using the agent's `paseo.parent-agent-id` label to tell a person from an agent. `paseo run --new-workspace` creates the workspace first, so that workspace is pinned a moment later, when its agent starts.
 - The status reflects the first agent of the workspace. Other agents in the same workspace do not change it.
+- A message sent with `paseo send`, including one from another agent, counts as yours: Paseo does not tell plugins which client sent a message.
 - The plugin remembers in memory which turns you started. A turn that is running while the plugin restarts or updates does not get the automatic reply label when it ends.
 
 ## Development
