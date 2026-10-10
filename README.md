@@ -13,7 +13,7 @@ Each workspace row gets up to four kinds of labels, always in this order:
 | Role | none | The first rule whose text appears in the title of the workspace's first agent. You define the rules, for example `🔨` → `Executor`. |
 | Attention | `You` (pink), and the workspace is pinned | The workspace was opened by a person, not by another agent. Removed, and the workspace unpinned, after 3 days without activity unless the agent waits for your reply. With the label hidden, the pin alone marks these workspaces and every pinned workspace counts. |
 | Status | `Running` (blue), `Idle` (green), `Blocked` (orange) | Follows the agent that opened the workspace. Blocked means a pending permission, a pending question, or a failed turn. Each status can be tracked without a label. |
-| Reply | `Reply` (red) | A turn that started with your message ended in a workspace that involves you, the agent asked you a question through the provider's question tool, or an agent or script added the label. Removed when you send a message or answer. Schedule and heartbeat runs neither add nor remove it. |
+| Reply | `Reply` (red) | The agent asked you a question through the provider's question tool, or an agent or script added the label because its answer needs yours. Optionally, every answer to a message of yours in a workspace that involves you. Removed when you send a message or answer. Schedule and heartbeat runs neither add nor remove it. |
 
 Labels you add by hand stay in front of these and are never removed.
 

@@ -32,7 +32,7 @@ export const organizerSettings = defineSettings({
         blocked: { name: "Blocked", color: "orange", show: true },
       }),
     // Add the reply label when a turn started by a person's message ends in an attention workspace.
-    replyAfterYourTurn: z.boolean().default(true),
+    replyAfterYourTurn: z.boolean().default(false),
     // Unpin and drop the attention label after this many days without activity. 0 turns it off.
     releaseAfterDays: z.number().int().min(0).default(3),
     // First rule whose `match` appears in the agent title wins.
