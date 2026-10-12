@@ -11,6 +11,15 @@ import { isAttentionWorkspace, type OrganizerSettings, organizerSettings } from 
 const SWEEP_INTERVAL_MS = 30 * 60_000;
 
 export default function contribute(server: PluginServerContext) {
+  // Paseo logs neither the exit code nor the signal of a plugin process that dies. Without one of
+  // these lines before the crash, the process was killed with SIGKILL.
+  process.on("exit", (code) => console.error(`Plugin process exiting with code ${code}`));
+  for (const signal of ["SIGTERM", "SIGHUP", "SIGINT"] as const) {
+    process.once(signal, () => {
+      console.error(`Plugin process received ${signal}`);
+      process.exit(1);
+    });
+  }
   const settings = server.registerSettings(organizerSettings);
   const ready = connectDaemon().then((daemon) => {
     const paseo = createPaseoApi(daemon);
@@ -60,7 +69,11 @@ export default function contribute(server: PluginServerContext) {
 
   // Paseo cannot create a pinned workspace. Deciding at creation, from the first agent's
   // parent label, lets the pin land with the workspace instead of after its agent starts.
+  // The app then applies the creation response, which still says unpinned and arrives a few
+  // milliseconds after the first turn starts, so that turn pins the workspace again a moment later.
   const creations: { human: boolean; at: number }[] = [];
+  const pinnedAtCreation = new Set<string>();
+  const REPIN_DELAY_MS = 2_000;
   server.before("workspace.create", ({ request }) => {
     const human = Boolean(request.agent) && !request.agent?.labels?.["paseo.parent-agent-id"];
     creations.push({ human, at: Date.now() });
@@ -70,6 +83,7 @@ export default function contribute(server: PluginServerContext) {
       while (creations.length && Date.now() - creations[0].at > 30_000) creations.shift();
       if (!creations.shift()?.human || !values.attention.pin) return null;
       await daemon.setWorkspacePinned(workspace.id, true);
+      pinnedAtCreation.add(workspace.id);
       return `${workspace.id}: pinned at creation`;
     }, `Failed to pin workspace ${workspace.id}`),
   );
@@ -81,14 +95,23 @@ export default function contribute(server: PluginServerContext) {
   // Agents whose current turn started with a person's message.
   const yourTurns = new Set<string>();
 
-  server.on("agent.turn_started", ({ agent }) =>
-    onAgentEvent(agent, `Failed to mark workspace ${agent.workspaceId} as running`, async (values, { paseo, labels }, workspaceId) => {
+  server.on("agent.turn_started", ({ agent }) => {
+    if (agent.workspaceId && pinnedAtCreation.delete(agent.workspaceId)) {
+      const workspaceId = agent.workspaceId;
+      setTimeout(() => {
+        void run(async (_values, { daemon }) => {
+          await daemon.setWorkspacePinned(workspaceId, true);
+          return `${workspaceId}: pinned again on its first turn`;
+        }, `Failed to pin workspace ${workspaceId}`);
+      }, REPIN_DELAY_MS);
+    }
+    return onAgentEvent(agent, `Failed to mark workspace ${agent.workspaceId} as running`, async (values, { paseo, labels }, workspaceId) => {
       const human = await humanStartedTurn(paseo, agent.id);
       if (human) yourTurns.add(agent.id);
       else yourTurns.delete(agent.id);
       return labels.apply(workspaceId, values, { status: "running", ...(human ? { reply: false } : {}) });
-    }),
-  );
+    });
+  });
 
   server.on("agent.turn_ended", ({ agent, outcome }) =>
     onAgentEvent(

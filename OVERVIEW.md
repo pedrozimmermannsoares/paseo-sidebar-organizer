@@ -11,6 +11,6 @@ The plugin leaves labels you add by hand in front of its own and never removes t
 
 Settings → Plugins → Sidebar organizer sets every label name and color, whether to pin, which statuses show a label, whether every answer to you adds the reply label, the inactivity period, and the role rules (text to match, label name, color).
 
-Workspaces created from the app are pinned as they are created. Workspaces created with `paseo run --new-workspace` show unpinned for a moment before they move up.
+Workspaces created from the app are pinned as they are created, and again 2 seconds after their first turn starts, because the app applies the creation reply, which still says unpinned. Workspaces created with `paseo run --new-workspace` show unpinned for a moment before they move up.
 
 Requires Paseo 0.11.2 or later on a daemon that listens on a local TCP address. The plugin SDK has no label or pin calls yet, so the plugin connects to that daemon the way the Paseo CLI does, using the daemon's local credential. It sends nothing outside the daemon.
